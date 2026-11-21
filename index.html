@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Jurnal Perkecambahan</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: lembar jurnal lab. Kepala + toolbar, dua tabel spesies (gandum ochre, cabai merah), tabel perbandingan dengan ilustrasi daun, panduan kelembapan. */
+:root{
+  --bg:#f4f7f3; --surface:#ffffff; --ink:#16231b; --muted:#56675c; --line:#d6dfd7; --accent:#2c7a4b;
+  --wheat:#a86b0c; --wheat-soft:#fbf0d9; --chili:#b92f25; --chili-soft:#fce6e3;
+  --dry-bg:#fbe9c6; --dry-fg:#7a4a05; --ok-bg:#d8efdf; --ok-fg:#175b33; --wet-bg:#d6e8f7; --wet-fg:#1a4f7c;
+  --head:'Space Grotesk',system-ui,sans-serif; --body:'Inter',system-ui,sans-serif; --mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1511; --surface:#151e18; --ink:#e6eee8; --muted:#9bac9f; --line:#2a372e; --accent:#62c28a;
+    --wheat:#e5b250; --wheat-soft:#2a2210; --chili:#f0786c; --chili-soft:#32191a;
+    --dry-bg:#3a2d0f; --dry-fg:#f0c878; --ok-bg:#16382a; --ok-fg:#8fdcb0; --wet-bg:#16304a; --wet-fg:#93c6f0;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1511; --surface:#151e18; --ink:#e6eee8; --muted:#9bac9f; --line:#2a372e; --accent:#62c28a;
+  --wheat:#e5b250; --wheat-soft:#2a2210; --chili:#f0786c; --chili-soft:#32191a;
+  --dry-bg:#3a2d0f; --dry-fg:#f0c878; --ok-bg:#16382a; --ok-fg:#8fdcb0; --wet-bg:#16304a; --wet-fg:#93c6f0;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font:15px/1.55 var(--body);
+  padding-block:28px 56px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+.wrap{max-width:1080px;margin:0 auto;display:grid;gap:36px}
+h1,h2,h3{font-family:var(--head);margin:0;text-wrap:balance;line-height:1.15}
+h1{font-size:clamp(28px,5vw,40px);font-weight:700;letter-spacing:-.01em}
+h2{font-size:24px;font-weight:700}
+p{margin:0}
+.eyebrow{font:600 12px/1 var(--body);letter-spacing:.09em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+.lede{max-width:62ch;color:var(--muted);margin-top:12px}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:0;margin:22px 0 0;border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
+.meta div{padding:12px 14px;border-right:1px solid var(--line);min-width:0}
+.meta div:last-child{border-right:0}
+.meta dt{font:600 11px/1.2 var(--body);letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.meta dd{margin:4px 0 0;font-weight:500}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:12px 16px;justify-content:space-between}
+.note{color:var(--muted);font-size:14px;max-width:64ch}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.btn{font:500 14px var(--body);color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 14px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn:focus-visible,.ed:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#status{min-height:1.4em;font-size:13px;color:var(--accent)}
+
+.sp{--c:var(--wheat);--cs:var(--wheat-soft);display:grid;gap:14px;border-top:4px solid var(--c);padding-top:16px}
+.sp.chili{--c:var(--chili);--cs:var(--chili-soft)}
+.sp-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px}
+.latin{font-style:italic;color:var(--muted)}
+.tag{font:600 12px/1 var(--body);letter-spacing:.04em;color:var(--c);background:var(--cs);border-radius:999px;padding:6px 10px}
+.sp-tools{display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;font-size:14px}
+.sp-tools label{display:flex;align-items:center;gap:8px}
+.split{width:64px;font:500 14px var(--mono);text-align:center;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:5px 6px}
+.sum{font-family:var(--mono);font-size:13px;color:var(--muted)}
+
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+.obs{min-width:900px}
+th,td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+thead th{font:600 11.5px/1.3 var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--bg);white-space:nowrap}
+tbody tr:last-child th,tbody tr:last-child td{border-bottom:0}
+.obs tbody th{width:74px;font-weight:500}
+.n{font:500 15px var(--mono);font-variant-numeric:tabular-nums}
+.flag{display:none;width:max-content;margin-top:4px;font:600 10px/1 var(--body);letter-spacing:.05em;text-transform:uppercase;color:var(--surface);background:var(--c);border-radius:4px;padding:3px 5px}
+tr.split .flag{display:block}
+tr.split th,tr.split td{background:var(--cs)}
+.ed{min-height:1.5em;border-radius:4px;padding:1px 4px;margin:-1px -4px;outline:0}
+.ed:hover{background:color-mix(in srgb,var(--c) 10%,transparent)}
+.ed:focus{box-shadow:0 0 0 2px var(--c)}
+.num{width:68px;font:500 14px var(--mono);text-align:right;font-variant-numeric:tabular-nums;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:4px 7px}
+select.m{font:500 13px var(--body);border:0;border-radius:999px;padding:5px 8px;cursor:pointer;background:var(--bg);color:var(--ink)}
+select.m option{background:var(--surface);color:var(--ink)}
+select.m[data-t="dry"]{background:var(--dry-bg);color:var(--dry-fg)}
+select.m[data-t="ok"]{background:var(--ok-bg);color:var(--ok-fg)}
+select.m[data-t="wet"]{background:var(--wet-bg);color:var(--wet-fg)}
+.c-tgl{width:84px}.c-h{width:96px}.c-m{width:136px}
+
+.leafcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.lf{--c:var(--wheat);--cs:var(--wheat-soft);margin:0;display:flex;gap:16px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.lf.chili{--c:var(--chili);--cs:var(--chili-soft)}
+.lf svg{width:92px;height:auto;flex:none;max-width:30%}
+.lf .shape{fill:var(--cs);stroke:var(--c);stroke-width:2;stroke-linejoin:round}
+.lf .vein{fill:none;stroke:var(--c);stroke-width:1.5;stroke-linecap:round}
+.lf figcaption{min-width:0;font-size:14px;color:var(--muted)}
+.lf strong{display:block;font:600 16px var(--head);color:var(--ink);margin-bottom:2px}
+.cmp{min-width:720px}
+.cmp tbody th{width:19%;font:600 13px var(--body);color:var(--ink)}
+.cmp thead .w{color:var(--wheat)}.cmp thead .c{color:var(--chili)}
+
+.scale{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
+.scale li{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:14px;color:var(--muted);min-width:0}
+.scale b{display:inline-block;font:600 13px var(--body);border-radius:999px;padding:3px 10px;margin-bottom:6px}
+.scale .dry{background:var(--dry-bg);color:var(--dry-fg)}
+.scale .ok{background:var(--ok-bg);color:var(--ok-fg)}
+.scale .wet{background:var(--wet-bg);color:var(--wet-fg)}
+.sec{display:grid;gap:14px}
+@media (prefers-reduced-motion:no-preference){.btn{transition:border-color .15s}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Biologi · Pertumbuhan dan Perkembangan</p>
+    <h1>Jurnal Pengamatan Perkecambahan</h1>
+    <p class="lede">Catat setiap hari selama 14 hari kapan benih gandum dan cabai mulai pecah, berapa tinggi batangnya, seperti apa daun pertamanya, dan seberapa lembap medianya.</p>
+    <dl class="meta">
+      <div><dt>Tanggal tanam</dt><dd>……………………</dd></div>
+      <div><dt>Media tanam</dt><dd>……………………</dd></div>
+      <div><dt>Suhu ruang</dt><dd>……………………</dd></div>
+      <div><dt>Waktu pengamatan</dt><dd>……………………</dd></div>
+    </dl>
+  </header>
+
+  <div class="bar">
+    <p class="note">Tabel masih kosong. Klik sel mana pun untuk mengisinya. Perubahan tersimpan di peramban ini.</p>
+    <div class="btns">
+      <button class="btn" id="b-clear" type="button">Kosongkan tabel</button>
+    </div>
+  </div>
+  <p id="status" role="status" aria-live="polite" style="margin-top:-24px"></p>
+
+  <section class="sp wheat" id="gandum" aria-labelledby="h-gandum">
+    <div class="sp-head">
+      <h2 id="h-gandum">Gandum</h2>
+      <span class="latin">Triticum aestivum</span>
+      <span class="tag">Monokotil · 1 keping biji</span>
+    </div>
+    <div class="sp-tools">
+      <label for="sp-gandum">Benih mulai pecah pada hari ke-
+        <input class="split" type="number" min="1" max="14" id="sp-gandum" data-sp="gandum"></label>
+      <span class="sum" id="sum-gandum"></span>
+    </div>
+    <div class="scroll"><table class="obs">
+      <thead><tr><th>Hari ke-</th><th class="c-tgl">Tanggal</th><th>Kondisi benih</th><th class="c-h">Tinggi batang (cm)</th><th>Bentuk daun pertama</th><th class="c-m">Kelembapan media</th><th>Catatan</th></tr></thead>
+      <tbody id="tb-gandum"></tbody>
+    </table></div>
+  </section>
+
+  <section class="sp chili" id="cabai" aria-labelledby="h-cabai">
+    <div class="sp-head">
+      <h2 id="h-cabai">Cabai</h2>
+      <span class="latin">Capsicum annuum</span>
+      <span class="tag">Dikotil · 2 keping biji</span>
+    </div>
+    <div class="sp-tools">
+      <label for="sp-cabai">Benih mulai pecah pada hari ke-
+        <input class="split" type="number" min="1" max="14" id="sp-cabai" data-sp="cabai"></label>
+      <span class="sum" id="sum-cabai"></span>
+    </div>
+    <div class="scroll"><table class="obs">
+      <thead><tr><th>Hari ke-</th><th class="c-tgl">Tanggal</th><th>Kondisi benih</th><th class="c-h">Tinggi batang (cm)</th><th>Bentuk daun pertama</th><th class="c-m">Kelembapan media</th><th>Catatan</th></tr></thead>
+      <tbody id="tb-cabai"></tbody>
+    </table></div>
+  </section>
+
+  <section class="sec" aria-labelledby="h-beda">
+    <h2 id="h-beda">Perbedaan daun pertama gandum dan cabai</h2>
+    <div class="leafcards">
+      <figure class="lf wheat">
+        <svg viewBox="0 0 120 124" role="img" aria-label="Daun gandum berbentuk pita sempit dengan tulang daun sejajar">
+          <path class="shape" d="M58 118 C56 84 56 44 70 6 C74 44 70 84 64 118 Z"/>
+          <path class="vein" d="M59.5 114 C58.5 82 59.5 46 69 14"/>
+          <path class="vein" d="M61 114 C60.5 82 62.5 46 70 12"/>
+          <path class="vein" d="M62.5 114 C62.5 82 65 46 70.5 14"/>
+        </svg>
+        <figcaption><strong>Gandum</strong>Daun pertama berbentuk pita sempit, ujung runcing, tepi rata, tulang daun sejajar.</figcaption>
+      </figure>
+      <figure class="lf chili">
+        <svg viewBox="0 0 120 124" role="img" aria-label="Daun cabai bulat telur dengan tulang daun menyirip">
+          <path class="shape" d="M60 116 C16 106 10 60 60 6 C110 60 104 106 60 116 Z"/>
+          <path class="vein" d="M60 116 L60 14"/>
+          <path class="vein" d="M60 92 L36 72"/><path class="vein" d="M60 92 L84 72"/>
+          <path class="vein" d="M60 68 L40 50"/><path class="vein" d="M60 68 L80 50"/>
+          <path class="vein" d="M60 44 L47 31"/><path class="vein" d="M60 44 L73 31"/>
+        </svg>
+        <figcaption><strong>Cabai</strong>Daun sejati pertama bulat telur, ujung runcing, tulang menyirip. Sebelumnya tampil dua kotiledon lonjong.</figcaption>
+      </figure>
+    </div>
+    <div class="scroll"><table class="cmp">
+      <thead><tr><th>Ciri</th><th class="w">Gandum (monokotil)</th><th class="c">Cabai (dikotil)</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Keping biji</th><td>1 keping (skutelum), makanan cadangan ada di endosperma</td><td>2 keping (kotiledon) yang menyimpan cadangan makanan</td></tr>
+        <tr><th scope="row">Pelindung tunas</th><td>Koleoptil, selubung runcing yang melindungi tunas saat menembus tanah</td><td>Tidak ada koleoptil. Hipokotil melengkung seperti kait dan menarik keping biji ke atas</td></tr>
+        <tr><th scope="row">Cara muncul</th><td>Hipogeal: keping biji tetap di dalam tanah</td><td>Epigeal: keping biji terangkat ke atas tanah dan menjadi hijau</td></tr>
+        <tr><th scope="row">Bentuk daun pertama</th><td>Pita sempit memanjang, ujung runcing, tepi rata</td><td>Kotiledon lonjong berpasangan, lalu daun sejati bulat telur bertangkai</td></tr>
+        <tr><th scope="row">Tulang daun</th><td>Sejajar</td><td>Menyirip</td></tr>
+        <tr><th scope="row">Sistem akar</th><td>Serabut</td><td>Tunggang: radikula menjadi akar utama</td></tr>
+        <tr><th scope="row">Benih mulai pecah</th><td>Sekitar hari ke-2 sampai 4</td><td>Lebih lambat, sekitar hari ke-7 sampai 14</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section class="sec" aria-labelledby="h-lembap">
+    <h2 id="h-lembap">Panduan mencatat kelembapan</h2>
+    <p class="note">Tusukkan ujung jari 1 cm ke media, lalu pilih tingkat yang paling cocok. Tulis jumlah air yang diberikan (ml) dan embun di penutup plastik pada kolom catatan.</p>
+    <ul class="scale">
+      <li><b class="dry">Kering</b><br>Tanah terang dan ringan, tampak retak. Siram segera.</li>
+      <li><b class="dry">Agak kering</b><br>Permukaan kering, 1 cm di bawahnya masih lembap. Siram sedikit.</li>
+      <li><b class="ok">Lembap</b><br>Gelap merata, terasa lembap saat ditekan, tidak ada air keluar. Kondisi ideal.</li>
+      <li><b class="wet">Basah</b><br>Mengilap, setetes air keluar saat diremas. Tunda penyiraman.</li>
+      <li><b class="wet">Becek</b><br>Air menggenang di dasar wadah. Buang genangan dan pastikan ada lubang.</li>
+    </ul>
+  </section>
+</div>
+
+<script>
+(function(){
+  var OPT=['Kering','Agak kering','Lembap','Basah','Becek'];
+  var TYPE={'Kering':'dry','Agak kering':'dry','Lembap':'ok','Basah':'wet','Becek':'wet'};
+  var COLN=['Tanggal','Kondisi benih','Tinggi','Bentuk daun pertama','Kelembapan','Catatan'];
+  var EX={
+    gandum:{split:3,rows:[
+      ['28 Okt','Benih direndam 8 jam, belum berubah','0','–','Lembap','Disiram 10 ml, wadah ditutup plastik berlubang'],
+      ['29 Okt','Benih membengkak, kulit ari masih utuh','0','–','Lembap','Tidak disiram, media masih gelap'],
+      ['30 Okt','Mulai pecah: akar lembaga (radikula) muncul ±2 mm','0','–','Lembap','Ujung putih keluar dari benih, foto diambil'],
+      ['31 Okt','Radikula ±1 cm, akar serabut halus mulai tumbuh','0','Belum ada daun; koleoptil masih di bawah tanah','Lembap','Radikula terlihat jelas dari sisi gelas bening'],
+      ['1 Nov','Koleoptil menembus permukaan tanah','1,0','Koleoptil hijau pucat berbentuk selubung runcing','Agak kering','Permukaan tanah mulai kering, disiram 5 ml'],
+      ['2 Nov','Kecambah tegak, akar serabut bertambah','2,5','Daun pertama keluar dari koleoptil: pita sempit, tulang daun sejajar','Lembap','Gelas dipindah ke dekat jendela'],
+      ['3 Nov','Daun pertama memanjang','4,0','Pita lurus ±4 cm, lebar ±2 mm, ujung runcing','Lembap','Daun tegak, hijau muda'],
+      ['4 Nov','Pertumbuhan cepat','5,5','Ujung daun pertama mulai melengkung','Lembap','Disiram 5 ml pagi hari'],
+      ['5 Nov','Daun kedua terlihat di pangkal daun pertama','7,0','Daun kedua berbentuk sama: pita sempit, tulang sejajar','Basah','Embun banyak di plastik, tutup dibuka 1 jam'],
+      ['6 Nov','Batang makin kokoh','8,5','Dua daun pita, panjang ±8 cm','Lembap','Plastik penutup dilepas'],
+      ['7 Nov','Akar serabut memenuhi dasar gelas','10,0','Daun pertama ±10 cm, tepi rata','Agak kering','Disiram 10 ml'],
+      ['8 Nov','Daun ketiga mulai muncul','11,5','Pita sempit, tulang daun sejajar terlihat jelas','Lembap','Suhu ruang 27 °C'],
+      ['9 Nov','Kecambah sehat, tidak ada bercak','13,0','Ujung daun pertama mulai terkulai','Lembap','Tidak disiram'],
+      ['10 Nov','Pengamatan akhir','14,5','Tiga daun berbentuk pita, tulang daun sejajar','Lembap','Foto dokumentasi diambil']
+    ]},
+    cabai:{split:8,rows:[
+      ['28 Okt','Benih direndam air hangat 12 jam','0','–','Lembap','Media disemprot, wadah ditutup plastik'],
+      ['29 Okt','Belum berubah, kulit biji melunak','0','–','Lembap','Suhu ruang 27 °C'],
+      ['30 Okt','Belum ada perubahan','0','–','Lembap','Tidak disiram'],
+      ['31 Okt','Belum ada perubahan','0','–','Agak kering','Disemprot 5 ml'],
+      ['1 Nov','Belum ada perubahan','0','–','Lembap','Cabai berkecambah lebih lambat dari gandum, tetap jaga lembap'],
+      ['2 Nov','Belum ada perubahan','0','–','Lembap','Wadah diletakkan di tempat hangat'],
+      ['3 Nov','Belum pecah, kulit biji tampak agak menggembung','0','–','Lembap','Diperiksa dengan kaca pembesar'],
+      ['4 Nov','Mulai pecah: kulit biji retak, radikula putih ±1 mm keluar','0','–','Lembap','Hari pertama benih pecah'],
+      ['5 Nov','Radikula ±5 mm tumbuh ke bawah','0','–','Lembap','Akar tunggang mulai terbentuk'],
+      ['6 Nov','Hipokotil melengkung seperti kait keluar dari tanah','0,8','Belum ada daun; keping biji masih terlipat dalam kulit biji','Basah','Embun di plastik, tutup dibuka 1 jam'],
+      ['7 Nov','Hipokotil menegak dan menarik keping biji ke atas','1,5','Keping biji masih terbungkus kulit biji','Lembap','Disemprot 5 ml'],
+      ['8 Nov','Kulit biji lepas, dua keping biji membuka','2,0','Dua kotiledon berhadapan, lonjong sempit ±5 mm','Lembap','Kulit biji ditemukan dekat batang'],
+      ['9 Nov','Kotiledon berubah hijau','2,5','Kotiledon lonjong memanjang ±1 cm, tulang daun tidak jelas','Lembap','Dipindah ke dekat jendela'],
+      ['10 Nov','Kotiledon terbuka penuh, tunas daun sejati belum muncul','3,0','Belum ada daun sejati; daun sejati pertama (bulat telur, tulang menyirip) diperkirakan hari ke-21 sampai 28','Lembap','Lanjutkan pengamatan di luar tabel ini']
+    ]}
+  };
+  ['gandum','cabai'].forEach(function(k){EX[k].split='';EX[k].rows=EX[k].rows.map(function(){return ['','','','','',''];});});
+  var KEY='jurnal-kecambah-kosong-v1', S;
+  function clone(o){return JSON.parse(JSON.stringify(o));}
+  function load(){
+    try{var r=localStorage.getItem(KEY);if(r){var o=JSON.parse(r);if(o&&o.gandum&&o.cabai)return o;}}catch(e){}
+    return clone(EX);
+  }
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function ed(sp,r,c,v){
+    return '<td><div class="ed" data-sp="'+sp+'" data-r="'+r+'" data-c="'+c+'" aria-label="'+COLN[c]+' hari ke-'+(r+1)+'">'+esc(v)+'</div></td>';
+  }
+  function sel(sp,r,v){
+    var o='<option value=""'+(v?'':' selected')+'>Pilih</option>';
+    OPT.forEach(function(k){o+='<option'+(k===v?' selected':'')+'>'+k+'</option>';});
+    return '<select class="m" data-t="'+(TYPE[v]||'')+'" aria-label="Kelembapan hari ke-'+(r+1)+'" data-sp="'+sp+'" data-r="'+r+'" data-c="4">'+o+'</select>';
+  }
+  function mark(sp){
+    var d=+S[sp].split;
+    document.querySelectorAll('#tb-'+sp+' tr').forEach(function(tr){tr.classList.toggle('split',+tr.getAttribute('data-day')===d);});
+    var hh=null,day=null;
+    S[sp].rows.forEach(function(x,i){var n=parseFloat(String(x[2]).replace(',','.'));if(!isNaN(n)){hh=n;day=i+1;}});
+    document.getElementById('sum-'+sp).textContent=hh===null?'Tinggi belum diisi':'Tinggi terakhir '+String(hh).replace('.',',')+' cm (hari ke-'+day+')';
+  }
+  function build(sp){
+    var h='';
+    S[sp].rows.forEach(function(x,r){
+      h+='<tr data-day="'+(r+1)+'"><th scope="row"><span class="n">'+(r+1)+'</span><span class="flag">Pecah</span></th>'
+        +ed(sp,r,0,x[0])+ed(sp,r,1,x[1])
+        +'<td><input class="num" inputmode="decimal" aria-label="Tinggi batang hari ke-'+(r+1)+' (cm)" data-sp="'+sp+'" data-r="'+r+'" data-c="2" value="'+esc(x[2])+'"></td>'
+        +ed(sp,r,3,x[3])+'<td>'+sel(sp,r,x[4])+'</td>'+ed(sp,r,5,x[5])+'</tr>';
+    });
+    var tb=document.getElementById('tb-'+sp);
+    tb.innerHTML=h;
+    tb.querySelectorAll('.ed').forEach(function(el){
+      try{el.contentEditable='plaintext-only';}catch(e){}
+      if(el.contentEditable!=='plaintext-only')el.contentEditable='true';
+    });
+    document.getElementById('sp-'+sp).value=S[sp].split;
+    mark(sp);
+  }
+  function onEdit(e){
+    var t=e.target,sp=t.getAttribute&&t.getAttribute('data-sp');
+    if(!sp)return;
+    var r=+t.getAttribute('data-r');
+    if(t.classList.contains('ed'))S[sp].rows[r][+t.getAttribute('data-c')]=t.textContent;
+    else if(t.classList.contains('num'))S[sp].rows[r][2]=t.value;
+    else if(t.classList.contains('m')){S[sp].rows[r][4]=t.value;t.setAttribute('data-t',TYPE[t.value]||'');}
+    else if(t.classList.contains('split'))S[sp].split=t.value;
+    else return;
+    mark(sp);save();
+  }
+  document.addEventListener('input',onEdit);
+  document.addEventListener('change',onEdit);
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Enter'&&e.target.classList&&e.target.classList.contains('ed')){e.preventDefault();e.target.blur();}
+  });
+  var st=document.getElementById('status'),tm;
+  function say(m){st.textContent=m;clearTimeout(tm);tm=setTimeout(function(){st.textContent='';},4000);}
+  document.getElementById('b-clear').addEventListener('click',function(){
+    ['gandum','cabai'].forEach(function(sp){
+      S[sp].split='';
+      S[sp].rows=S[sp].rows.map(function(){return ['','','','','',''];});
+      build(sp);
+    });
+    save();say('Tabel dikosongkan. Isi sesuai pengamatanmu.');
+  });
+  S=load();build('gandum');build('cabai');
+})();
+</script>
+</body>
+</html>
